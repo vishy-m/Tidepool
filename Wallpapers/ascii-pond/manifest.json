@@ -1,0 +1,116 @@
+{
+  "name": "ASCII Pond",
+  "description": "Koi drawn in text characters. Click the desktop to drop food.",
+  "entry": "index.html",
+  "settings": [
+    {
+      "key": "count",
+      "label": "Koi",
+      "type": "range",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "key": "speed",
+      "label": "Swim speed",
+      "type": "range",
+      "min": 0.2,
+      "max": 3,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "cursor",
+      "label": "When the cursor is near",
+      "type": "select",
+      "default": "ignore",
+      "options": [
+        {
+          "value": "curious",
+          "label": "Koi follow it"
+        },
+        {
+          "value": "shy",
+          "label": "Koi flee from it"
+        },
+        {
+          "value": "ignore",
+          "label": "Koi ignore it"
+        }
+      ]
+    },
+    {
+      "key": "accent",
+      "label": "Koi colour",
+      "type": "color",
+      "default": "#ff6a2b"
+    },
+    {
+      "key": "ripples",
+      "label": "Ripples",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "cell",
+      "label": "Character size",
+      "type": "range",
+      "min": 7,
+      "max": 22,
+      "step": 1,
+      "default": 11
+    },
+    {
+      "key": "theme",
+      "label": "Background",
+      "type": "select",
+      "default": "night",
+      "options": [
+        {
+          "value": "night",
+          "label": "Night"
+        },
+        {
+          "value": "deep",
+          "label": "Deep teal"
+        },
+        {
+          "value": "dusk",
+          "label": "Dusk"
+        },
+        {
+          "value": "sand",
+          "label": "Sand"
+        },
+        {
+          "value": "paper",
+          "label": "Paper"
+        }
+      ]
+    },
+    {
+      "key": "shimmer",
+      "label": "Water shimmer",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "fps",
+      "label": "Frame rate",
+      "type": "select",
+      "default": 60,
+      "options": [
+        {
+          "value": 60,
+          "label": "60 fps"
+        },
+        {
+          "value": 30,
+          "label": "30 fps (saves battery)"
+        }
+      ]
+    }
+  ]
+}

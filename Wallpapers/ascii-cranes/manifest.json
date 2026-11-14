@@ -1,0 +1,128 @@
+{
+  "name": "ASCII Cranes",
+  "description": "A flock of paper cranes crossing the desktop. Click to scatter them.",
+  "entry": "index.html",
+  "settings": [
+    {
+      "key": "count",
+      "label": "Cranes",
+      "type": "range",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "default": 9
+    },
+    {
+      "key": "speed",
+      "label": "Flight speed",
+      "type": "range",
+      "min": 0.2,
+      "max": 3,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "direction",
+      "label": "Direction (degrees)",
+      "type": "range",
+      "min": 0,
+      "max": 355,
+      "step": 5,
+      "default": 20
+    },
+    {
+      "key": "flapRate",
+      "label": "Flap rate",
+      "type": "range",
+      "min": 0.2,
+      "max": 3,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "cursor",
+      "label": "When the cursor is near",
+      "type": "select",
+      "default": "ignore",
+      "options": [
+        {
+          "value": "curious",
+          "label": "Cranes follow it"
+        },
+        {
+          "value": "shy",
+          "label": "Cranes flee from it"
+        },
+        {
+          "value": "ignore",
+          "label": "Cranes ignore it"
+        }
+      ]
+    },
+    {
+      "key": "accent",
+      "label": "Crown and wingtip colour",
+      "type": "color",
+      "default": "#ff5a4d"
+    },
+    {
+      "key": "cell",
+      "label": "Character size",
+      "type": "range",
+      "min": 7,
+      "max": 22,
+      "step": 1,
+      "default": 11
+    },
+    {
+      "key": "theme",
+      "label": "Background",
+      "type": "select",
+      "default": "night",
+      "options": [
+        {
+          "value": "night",
+          "label": "Night"
+        },
+        {
+          "value": "deep",
+          "label": "Deep teal"
+        },
+        {
+          "value": "dusk",
+          "label": "Dusk"
+        },
+        {
+          "value": "sand",
+          "label": "Sand"
+        },
+        {
+          "value": "paper",
+          "label": "Paper"
+        }
+      ]
+    },
+    {
+      "key": "shimmer",
+      "label": "Drifting dust",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "fps",
+      "label": "Frame rate",
+      "type": "select",
+      "default": 60,
+      "options": [
+        {
+          "value": 60,
+          "label": "60 fps"
+        },
+        {
+          "value": 30,
+          "label": "30 fps (saves battery)"
+        }
+      ]
+    }
+  ]
+}

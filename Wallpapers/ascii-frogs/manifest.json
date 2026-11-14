@@ -1,0 +1,125 @@
+{
+  "name": "ASCII Frogs",
+  "description": "Frogs that sit, then leap. Click to startle the nearby ones.",
+  "entry": "index.html",
+  "settings": [
+    {
+      "key": "count",
+      "label": "Frogs",
+      "type": "range",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "key": "hop",
+      "label": "How often they leap",
+      "type": "range",
+      "min": 0.2,
+      "max": 4,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "leap",
+      "label": "Leap length",
+      "type": "range",
+      "min": 0.3,
+      "max": 2.5,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "cursor",
+      "label": "When the cursor is near",
+      "type": "select",
+      "default": "ignore",
+      "options": [
+        {
+          "value": "curious",
+          "label": "Frogs follow it"
+        },
+        {
+          "value": "shy",
+          "label": "Frogs flee from it"
+        },
+        {
+          "value": "ignore",
+          "label": "Frogs ignore it"
+        }
+      ]
+    },
+    {
+      "key": "accent",
+      "label": "Frog colour",
+      "type": "color",
+      "default": "#6fd66a"
+    },
+    {
+      "key": "ripples",
+      "label": "Ripples",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "cell",
+      "label": "Character size",
+      "type": "range",
+      "min": 7,
+      "max": 22,
+      "step": 1,
+      "default": 11
+    },
+    {
+      "key": "theme",
+      "label": "Background",
+      "type": "select",
+      "default": "deep",
+      "options": [
+        {
+          "value": "night",
+          "label": "Night"
+        },
+        {
+          "value": "deep",
+          "label": "Deep teal"
+        },
+        {
+          "value": "dusk",
+          "label": "Dusk"
+        },
+        {
+          "value": "sand",
+          "label": "Sand"
+        },
+        {
+          "value": "paper",
+          "label": "Paper"
+        }
+      ]
+    },
+    {
+      "key": "shimmer",
+      "label": "Water shimmer",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "fps",
+      "label": "Frame rate",
+      "type": "select",
+      "default": 60,
+      "options": [
+        {
+          "value": 60,
+          "label": "60 fps"
+        },
+        {
+          "value": 30,
+          "label": "30 fps (saves battery)"
+        }
+      ]
+    }
+  ]
+}

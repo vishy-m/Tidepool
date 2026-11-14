@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Compass Field</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script>
+      (() => {
+        'use strict';
+        const wp = window.wallpaper || { settings: {}, pointer: { inside: false }, paused: false, on() {} };
+        const S = Object.assign(
+          { spacing: 34, thickness: 1.5, mode: 'point', colour: '#7fd4ff', background: '#0b0d12' },
+          wp.settings);
+
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        let W = 0, H = 0, cols = 0, rows = 0, angles = new Float32Array(0);
+        const pulses = [];
+        let time = 0, last = 0, raf = 0;
+
+        function resize() {
+          const dpr = window.devicePixelRatio || 1;
+          W = innerWidth; H = innerHeight;
+          canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          cols = Math.ceil(W / S.spacing) + 1; rows = Math.ceil(H / S.spacing) + 1;
+          angles = new Float32Array(cols * rows);
+        }
+
+        function frame(now) {
+          raf = 0;
+          if (wp.paused) return;
+          raf = requestAnimationFrame(frame);
+          const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+          last = now; time += dt;
+          while (pulses.length && time - pulses[0].born > 2.5) pulses.shift();
+
+          ctx.fillStyle = S.background;
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = S.colour;
+          ctx.lineWidth = S.thickness;
+          ctx.lineCap = 'round';
+
+          const ptr = wp.pointer, half = S.spacing * 0.36, ease = Math.min(1, dt * 7);
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const x = c * S.spacing, y = r * S.spacing, i = r * cols + c;
+              let target, glow = 0.22;
+              if (ptr.inside) {
+                const d = Math.hypot(ptr.x - x, ptr.y - y);
+                target = Math.atan2(ptr.y - y, ptr.x - x) + (S.mode === 'swirl' ? Math.PI / 2 : 0);
+                glow += 0.6 * Math.exp(-d / 260);
+              } else { // nothing to point at: drift like grass in a slow wind
+                target = Math.sin(x * 0.004 + time * 0.3) * 1.2 + Math.cos(y * 0.005 - time * 0.22) * 1.2;
+              }
+              for (const p of pulses) {
+                const edge = Math.abs(Math.hypot(p.x - x, p.y - y) - (time - p.born) * 520);
+                if (edge < 60) {
+                  const hit = (1 - edge / 60) * (1 - (time - p.born) / 2.5);
+                  glow += hit; target += hit * 1.6;
+                }
+              }
+              let diff = (target - angles[i]) % (Math.PI * 2);
+              if (diff > Math.PI) diff -= Math.PI * 2;
+              if (diff < -Math.PI) diff += Math.PI * 2;
+              angles[i] += diff * ease;
+
+              const dx = Math.cos(angles[i]) * half, dy = Math.sin(angles[i]) * half;
+              ctx.globalAlpha = Math.min(1, glow);
+              ctx.beginPath();
+              ctx.moveTo(x - dx, y - dy);
+              ctx.lineTo(x + dx, y + dy);
+              ctx.stroke();
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        wp.on('settings', (changed) => {
+          const regrid = changed.spacing !== undefined && changed.spacing !== S.spacing;
+          Object.assign(S, changed);
+          if (regrid) resize();
+        });
+        wp.on('click', (p) => pulses.push({ x: p.x, y: p.y, born: time }));
+        wp.on('resume', () => { last = performance.now(); if (!raf) raf = requestAnimationFrame(frame); });
+        addEventListener('resize', resize);
+
+        resize();
+        raf = requestAnimationFrame(frame);
+      })();
+    </script>
+  </body>
+</html>

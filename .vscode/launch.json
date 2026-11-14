@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Wallpaper App}",
+            "name": "Debug Tidepool",
+            "target": "Tidepool",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug Tidepool"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Wallpaper App}",
+            "name": "Release Tidepool",
+            "target": "Tidepool",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release Tidepool"
+        }
+    ]
+}

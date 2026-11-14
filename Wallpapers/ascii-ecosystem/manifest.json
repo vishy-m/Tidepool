@@ -1,0 +1,62 @@
+{
+  "name": "ASCII Ecosystem",
+  "description": "All the animals in one world. The view drifts from open sea past a reef, a koi pond, lily pads, a beach, dunes and a meadow to a lake, then back.",
+  "entry": "index.html",
+  "settings": [
+    {
+      "key": "pan",
+      "label": "Drift speed",
+      "type": "range",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "key": "density",
+      "label": "How many animals",
+      "type": "range",
+      "min": 0.3,
+      "max": 2.5,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "ripples",
+      "label": "Ripples",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "cell",
+      "label": "Character size",
+      "type": "range",
+      "min": 7,
+      "max": 22,
+      "step": 1,
+      "default": 11
+    },
+    {
+      "key": "shimmer",
+      "label": "Water shimmer and grass",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "fps",
+      "label": "Frame rate",
+      "type": "select",
+      "default": 60,
+      "options": [
+        {
+          "value": 60,
+          "label": "60 fps"
+        },
+        {
+          "value": 30,
+          "label": "30 fps (saves battery)"
+        }
+      ]
+    }
+  ]
+}
