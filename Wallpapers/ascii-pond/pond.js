@@ -1,8 +1,10 @@
 (() => {
   'use strict';
-  const { TAU, rand, clamp, lerp, noise } = Ascii;
+  const { TAU, rand, clamp, lerp, noise, angleDiff } = Ascii;
 
   const SPINE = 16; // points along each koi, head to tail
+  // How far away (px) koi notice food: nearby ones at once, then further off as the scent spreads.
+  const NOTICE = 500, SPREAD = 100; // px, px per second
   const pellets = [];
 
   function make(w) {
@@ -43,35 +45,47 @@
       const p = pellets[i];
       p.vx *= Math.exp(-dt); p.vy *= Math.exp(-dt);
       p.x += p.vx * dt; p.y += p.vy * dt;
+      // A scene with rocks in the water says when food has come down where no koi can get at it.
+      p.stranded = w.reachable ? !w.reachable(p.x, p.y) : false;
       if (w.time - p.born > 30) pellets.splice(i, 1);
     }
 
     for (const f of w.list) {
       f.wander = (f.wander + rand(-1.1, 1.1) * dt) * (1 - 0.4 * dt);
       const v = { x: Math.cos(f.heading + f.wander), y: Math.sin(f.heading + f.wander) };
-      let hurry = 0;
+      let hurry = 0, turnRate = 1.3, pace = 1;
       w.edges(v, f);
 
-      let food = null, foodDist = 460;
+      let food = null, foodDist = Infinity;
       for (const p of pellets) {
+        if (p.stranded) continue;
         const d = Math.hypot(p.x - f.x, p.y - f.y);
-        if (d < foodDist) { food = p; foodDist = d; }
+        if (d < foodDist && d < NOTICE + SPREAD * (w.time - p.born)) { food = p; foodDist = d; }
       }
-      if (food && foodDist < 16) {
+      const mouth = Math.max(14, f.length * 0.08); // about the size of the head drawn round (f.x, f.y)
+      if (food && foodDist < mouth) {
         pellets.splice(pellets.indexOf(food), 1);
         w.ring(f.x, f.y, 0.3);
       } else if (food) {
-        v.x += (food.x - f.x) / foodDist * 3;
-        v.y += (food.y - f.y) / foodDist * 3;
-        hurry = 0.35 + 0.65 * (1 - foodDist / 460);
+        const dx = food.x - f.x, dy = food.y - f.y;
+        v.x += dx / foodDist * 3;
+        v.y += dy / foodDist * 3;
+        hurry = 0.35 + 0.65 * clamp(1 - foodDist / 900, 0, 1);
+        turnRate = 4.1;
+        // A koi can only turn onto food lying outside its turning circle (radius speed / turn
+        // rate); food inside it gets swum round instead. So it slows down until the circle fits.
+        const off = Math.min(Math.PI / 2, Math.abs(angleDiff(f.heading, Math.atan2(dy, dx))));
+        const fastest = 0.7 * turnRate * foodDist / (2 * Math.sin(off) + 1e-6);
+        pace = clamp(fastest / (f.cruise * S.speed * (1 + 1.8 * hurry)), 0.15, 1);
       } else {
         hurry = w.cursor(v, f);
+        turnRate = 1.3 + 2.8 * hurry;
       }
-      w.apart(v, f, 110);
+      w.apart(v, f, food ? 60 : 110); // they crowd in close when they are feeding
 
-      w.turn(f, v, 1.3 + 2.8 * hurry, dt);
-      const target = f.cruise * S.speed * (1 + 1.8 * hurry) * (0.85 + 0.15 * Math.sin(w.time * 0.5 + f.seed));
-      f.speed += (target - f.speed) * Math.min(1, dt * 2);
+      w.turn(f, v, turnRate, dt);
+      const target = f.cruise * S.speed * (1 + 1.8 * hurry) * pace * (0.85 + 0.15 * Math.sin(w.time * 0.5 + f.seed));
+      f.speed += (target - f.speed) * Math.min(1, dt * (target < f.speed ? 4 : 2)); // brakes faster than it speeds up
       f.x += Math.cos(f.heading) * f.speed * dt;
       f.y += Math.sin(f.heading) * f.speed * dt;
       f.phase += dt * (1.6 + f.speed * 0.06);
@@ -136,8 +150,9 @@
   function draw(w) {
     for (const f of w.list) drawFish(w, f);
     for (const p of pellets) {
+      // Food floats on the surface, so it shows over the koi (and rocks) beneath it.
       const fade = clamp((30 - (w.time - p.born)) / 4, 0, 1);
-      w.glyph(p.x, p.y, 'o', w.colour(w.T.food, fade));
+      w.glyph(p.x, p.y, 'o', w.colour(w.T.food, fade), true);
     }
   }
 

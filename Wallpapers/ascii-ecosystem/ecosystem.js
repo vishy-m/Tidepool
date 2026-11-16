@@ -243,7 +243,16 @@
       for (const p of sub.solids) {
         closest(p, wx, c.y);
         const dx = wx - nearest.x, dy = c.y - nearest.y, d = Math.hypot(dx, dy) || 1, reach = p.r + 80;
-        if (d < reach) { const push = (1 - (d - p.r) / 80) * 3.2; v.x += dx / d * push; v.y += dy / d * push; }
+        if (d < reach) {
+          const push = (1 - (d - p.r) / 80) * 3.2;
+          v.x += dx / d * push; v.y += dy / d * push;
+          // ...and along its edge, whichever way the creature is already heading. Pushing straight
+          // out alone cancels a pull toward something on the far side (food beyond a log), and the
+          // creature would press against it; this way it slides round.
+          let tx = -dy / d, ty = dx / d;
+          if (tx * Math.cos(c.heading) + ty * Math.sin(c.heading) < 0) { tx = -tx; ty = -ty; }
+          v.x += tx * push * 0.8; v.y += ty * push * 0.8;
+        }
       }
       if (c.goal) {
         const dx = c.goal.x - wx, dy = c.goal.y - c.y, d = Math.hypot(dx, dy) || 1;
@@ -251,7 +260,17 @@
       }
     };
     if (r.name === 'frogs') sub.perch = (x, y, frog) => perch(sub, x, y, frog);
+    if (r.name === 'koi') sub.reachable = (x, y) => !onSolid(sub, x + sub.left, y);
     return sub;
+  }
+
+  // Food that lands well inside a rock or log is out of reach: a koi's head can only get to the edge.
+  function onSolid(sub, wx, y) {
+    for (const p of sub.solids) {
+      closest(p, wx, y);
+      if (Math.hypot(wx - nearest.x, y - nearest.y) < p.r - 10) return true;
+    }
+    return false;
   }
 
   // Nothing walks or swims through a solid: anything that ends up inside one is moved to its edge.

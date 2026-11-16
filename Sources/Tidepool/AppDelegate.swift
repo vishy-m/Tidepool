@@ -92,8 +92,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         RunLoop.main.add(timer, forMode: .common)
         pointerTimer = timer
 
-        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] _ in
-            MainActor.assumeIsolated { self?.handleClick() }
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            // The window server records which window the click actually went to. That is the
+            // reliable answer to "was it on the desktop?": unlike comparing window frames, it is
+            // not fooled by overlays that let clicks through, or by the pointer's own window.
+            let target = event.cgEvent?.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) ?? 0
+            MainActor.assumeIsolated { self?.handleClick(target: CGWindowID(truncatingIfNeeded: target)) }
         }
     }
 
@@ -114,13 +118,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         controllers.forEach { $0.pointerMoved(to: pointerOnDesktop ? location : nil) }
     }
 
-    private func handleClick() {
+    /// `target` is the window that received the click, or 0 when the event did not say.
+    private func handleClick(target: CGWindowID) {
         let location = NSEvent.mouseLocation
-        guard !state.paused, isDesktopVisible(at: location) else { return }
+        guard !state.paused else { return }
+        let onDesktop = target != 0 ? isDesktopWindow(target) : isDesktopVisible(at: location)
+        guard onDesktop else { return }
         controllers.forEach { $0.clicked(at: location) }
     }
 
-    /// True when no app window covers the point, i.e. the click landed on the desktop.
+    /// True for the desktop's own windows: Finder's desktop (icon level) and everything below it,
+    /// such as the system wallpaper. Desktop widgets sit just above that level, so clicking one
+    /// doesn't count, and neither does any app window, the Dock or the menu bar.
+    private func isDesktopWindow(_ id: CGWindowID) -> Bool {
+        guard let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow, id) as? [[String: Any]])?.first,
+              let layer = info[kCGWindowLayer as String] as? Int else { return false }
+        return layer <= Int(CGWindowLevelForKey(.desktopIconWindow))
+    }
+
+    /// True when no app window covers the point, judged from window frames alone. Used for the
+    /// cursor, which has no event saying what is under it, and for clicks whose event didn't say.
     private func isDesktopVisible(at location: NSPoint) -> Bool {
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(location) }),
               screen.visibleFrame.contains(location),  // not the menu bar or Dock
@@ -130,9 +147,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         let point = CGPoint(x: location.x, y: primary.frame.maxY - location.y)
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
+        let cursorLevel = Int(CGWindowLevelForKey(.cursorWindow))
         for info in windows {
             // Negative layers are the desktop itself: icons, widgets and this app's wallpaper.
-            guard let layer = info[kCGWindowLayer as String] as? Int, layer >= 0,
+            // Whenever macOS draws the pointer in software, the pointer is a window too, at cursor
+            // level, and it always covers the spot under the mouse, so it is skipped.
+            guard let layer = info[kCGWindowLayer as String] as? Int, layer >= 0, layer < cursorLevel,
                   let alpha = info[kCGWindowAlpha as String] as? Double, alpha > 0,
                   let boundsDict = info[kCGWindowBounds as String] as? NSDictionary,
                   let bounds = CGRect(dictionaryRepresentation: boundsDict) else { continue }
